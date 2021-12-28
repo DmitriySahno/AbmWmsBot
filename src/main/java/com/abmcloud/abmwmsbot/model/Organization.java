@@ -27,7 +27,9 @@ public class Organization {
     @OneToMany(mappedBy = "organization")
     @ApiModelProperty(value = "Доступные ключи организации")
     private Set<Key> keys;
-    @OneToMany(mappedBy = "organization")
-    private Set<BotUser> users;
+//    @OneToMany(mappedBy = "organization")
+//    private Set<BotUser> users;
+//    @OneToMany(mappedBy = "organization")
+//    private Set<Report> reports;
 }
 

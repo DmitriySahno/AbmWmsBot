@@ -1,5 +1,6 @@
 package com.abmcloud.abmwmsbot.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -27,6 +28,7 @@ public class Report {
     @Column(name = "description")
     @ApiModelProperty(value = "Описание отчета")
     private String description;
+//    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "organization_id", referencedColumnName = "id")
     @ApiModelProperty(value = "Организация, которой доступен отчет")

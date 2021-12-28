@@ -19,7 +19,7 @@ public class ReportContoller {
     private final ReportService reportService;
     private final UserRepository userRepository;
 
-    @GetMapping("/")
+    @GetMapping("")
     @ApiOperation(value = "Получить все отчеты")
     public List<Report> getReports() {
         return reportService.getAll();
