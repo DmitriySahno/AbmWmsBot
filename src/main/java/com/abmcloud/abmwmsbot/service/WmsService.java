@@ -1,8 +1,8 @@
 package com.abmcloud.abmwmsbot.service;
 
+import com.abmcloud.abmwmsbot.dto.ReportData;
+import com.abmcloud.abmwmsbot.dto.ReportRow;
 import com.abmcloud.abmwmsbot.model.Organization;
-import com.abmcloud.abmwmsbot.model.ReportData;
-import com.abmcloud.abmwmsbot.model.ReportRow;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -20,11 +20,11 @@ public class WmsService {
     private final RestTemplate restTemplate;
 
     public List<ReportRow> getReports(Organization organization){
-        String uri = organization.getId()+"/api/reports/";
+        String url = String.valueOf(organization.getId());
         HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.add("Content-type", "application/json");
 
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(uri);
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
 
         return restTemplate.exchange(
                 builder.toUriString(),
@@ -33,17 +33,17 @@ public class WmsService {
                 ReportData.class).getBody().getData();
     }
 
-    public List<ReportRow>  getReport(String uri){
+    public ReportData  getReport(String url){
         HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.add("Content-type", "application/json");
 
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(uri);
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
 
         return restTemplate.exchange(
                 builder.toUriString(),
                 HttpMethod.GET,
                 new HttpEntity("parameters", requestHeaders),
-                ReportData.class).getBody().getData();
+                ReportData.class).getBody();
     }
 
 }

@@ -25,5 +25,4 @@ class ReportContollerTest {
                 .andDo(print());
     }
 
-
 }

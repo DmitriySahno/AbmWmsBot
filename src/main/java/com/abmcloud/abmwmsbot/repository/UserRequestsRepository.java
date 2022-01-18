@@ -1,7 +1,13 @@
 package com.abmcloud.abmwmsbot.repository;
 
-import com.abmcloud.abmwmsbot.model.BotUserRequests;
+import com.abmcloud.abmwmsbot.model.BotUser;
+import com.abmcloud.abmwmsbot.model.BotUserRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface UserRequestsRepository extends JpaRepository<BotUserRequests, Long> {
+import java.util.List;
+
+public interface UserRequestsRepository extends JpaRepository<BotUserRequest, Long> {
+
+    List<BotUserRequest> findAllByUser(BotUser user);
+
 }

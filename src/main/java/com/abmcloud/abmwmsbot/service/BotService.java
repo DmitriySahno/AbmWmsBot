@@ -1,26 +1,28 @@
 package com.abmcloud.abmwmsbot.service;
 
-import com.abmcloud.abmwmsbot.commands.ReportCommand;
+import com.abmcloud.abmwmsbot.dto.ReportData;
 import com.abmcloud.abmwmsbot.enums.BotCommands;
+import com.abmcloud.abmwmsbot.enums.ChartTypes;
 import com.abmcloud.abmwmsbot.model.BotUser;
 import com.abmcloud.abmwmsbot.model.Organization;
 import com.abmcloud.abmwmsbot.model.Report;
+import com.abmcloud.abmwmsbot.utils.ChartGoogleUtils;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
-import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.User;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
+import org.telegram.telegrambots.meta.api.objects.*;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
 import javax.annotation.PostConstruct;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -28,21 +30,16 @@ import java.util.Optional;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class BotService extends TelegramLongPollingBot {
     @Value("${bot.name}")
     private String name;
     @Value("${bot.token}")
     private String token;
 
-    private final ReportCommand reportCommand;
     private final ReportService reportService;
     private final UserService userService;
-
-    public BotService(ReportService reportService, UserService userService) {
-        this.reportCommand = new ReportCommand(this);
-        this.reportService = reportService;
-        this.userService = userService;
-    }
+    private final WmsService wmsService;
 
     @Override
     public String getBotUsername() {
@@ -94,15 +91,42 @@ public class BotService extends TelegramLongPollingBot {
     }
 
     private void onCallbackQuery(CallbackQuery callback) {
-        String data = callback.getData();
+        String[] data = callback.getData().split("\\|");
+        ChartTypes chartType = ChartTypes.getType(data[0]); //get chart type
+        String uri = data[1]; // get report uri
         Long chatId = callback.getFrom().getId();
-        SendMessage response = new SendMessage();
+        log.info("Processing callback data \"{}\", \"{}\"", chartType, uri);
+
+
+        BotUser botUser = userService.getUserByTelegramId(String.valueOf(chatId)).get();
+        String url = botUser.getOrganization().getUrl() + uri;
+        ReportData report = wmsService.getReport(url);
+
+        String fileName;
+
+        SendPhoto responsePhoto = new SendPhoto();
+        responsePhoto.setChatId(String.valueOf(chatId));
+
+//        ChartJavaFXUtils chartJavaFXThread = new ChartJavaFXUtils(responsePhoto, report, chartType);
+//        chartJavaFXThread.start();
+//        try {
+//            chartJavaFXThread.join();
+//        } catch (InterruptedException e) {
+//            log.error("Failed to join thread \"{}\" with message \"{}\"", chartJavaFXThread.getName(), e.getMessage());
+//        }
+
+//        JavaFXChartApplication chartApplication = new JavaFXChartApplication(responsePhoto, report, chartType);
+
+        sendPhoto(responsePhoto);
+
+        /*SendMessage response = new SendMessage();
         response.setChatId(String.valueOf(chatId));
-        log.info("Processing callback data \"{}\"", data);
-        if (data.startsWith("Отчеты_"))
-
-
-            sendResponse(response);
+        response.setText(report.getName() + "\n");
+        report.getData().stream().forEach(rr -> {
+            response.setText(StringUtils.defaultIfEmpty(response.getText(), "") + String.format("%s: %s", rr.getParam(), rr.getValue()) + "\n");
+        });
+        sendResponse(response);
+        */
 
     }
 
@@ -114,6 +138,18 @@ public class BotService extends TelegramLongPollingBot {
         } catch (TelegramApiException e) {
             e.printStackTrace();
             log.error("Failed to execute response \"{}\", error: \"{}\"", response.getText(), e.getMessage());
+        }
+    }
+
+    private void sendPhoto(SendPhoto response) {
+        try {
+            if (response.getPhoto() != null) {
+                execute(response);
+                log.info("Sending a photo \"{}\"", response.getPhoto().getMediaName());
+            }
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+            log.error("Failed to send a photo \"{}\", error: \"{}\"", response.getPhoto().getMediaName(), e.getMessage());
         }
     }
 
@@ -147,7 +183,7 @@ public class BotService extends TelegramLongPollingBot {
         for (Report report : reports) {
             InlineKeyboardButton button = new InlineKeyboardButton();
             button.setText(report.getAlias());
-            button.setCallbackData(report.getName());
+            button.setCallbackData(String.format("%s|%s", report.getChartType(), report.getUri()));
             reportButtons.add(Collections.singletonList(button));
         }
 

@@ -1,4 +1,4 @@
-package com.abmcloud.abmwmsbot.model;
+package com.abmcloud.abmwmsbot.dto;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -9,8 +9,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @ApiModel(value = "Строка отчета")
 public class ReportRow{
-    @ApiModelProperty(value = "Показатель")
+    @ApiModelProperty(value = "Параметр")
     private final String param;
-    @ApiModelProperty(value = "Значение")
+    @ApiModelProperty(value = "Значение параметра")
     private final String value;
 }
