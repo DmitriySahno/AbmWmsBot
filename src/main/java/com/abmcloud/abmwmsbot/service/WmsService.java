@@ -19,20 +19,6 @@ public class WmsService {
 
     private final RestTemplate restTemplate;
 
-    public List<ReportRow> getReports(Organization organization){
-        String url = String.valueOf(organization.getId());
-        HttpHeaders requestHeaders = new HttpHeaders();
-        requestHeaders.add("Content-type", "application/json");
-
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
-
-        return restTemplate.exchange(
-                builder.toUriString(),
-                HttpMethod.GET,
-                new HttpEntity("parameters", requestHeaders),
-                ReportData.class).getBody().getData();
-    }
-
     public ReportData  getReport(String url){
         HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.add("Content-type", "application/json");

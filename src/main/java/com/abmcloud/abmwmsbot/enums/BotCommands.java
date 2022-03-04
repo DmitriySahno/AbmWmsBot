@@ -13,8 +13,7 @@ public enum BotCommands {
     START("/start"),
     REPORTS("/reports"),
     INFO("/info"),
-    SETTINGS("/settings"),
-    ADMIN("/admin");
+    SETTINGS("/settings");
 
     private final String command;
     private static final Map<String, BotCommands> commands;
